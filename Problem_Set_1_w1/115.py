@@ -1,3 +1,9 @@
-a = list(map(input().split()))
+a = list(map(str, input().split()))
 b = input()
-print("not ended")
+isExist = False
+for i in a:
+    if b in i:
+        isExist = True
+        break
+
+print(isExist)
