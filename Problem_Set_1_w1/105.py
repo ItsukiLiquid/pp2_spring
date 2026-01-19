@@ -11,5 +11,5 @@ def rounding(a, b):
 
 a = int(input())
 b = int(input())
-print(a / b)
 print(rounding(a, b))
+print(a / b)
