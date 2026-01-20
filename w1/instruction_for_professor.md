@@ -1,1 +1,0 @@
-The files 1.py, 2.py, 3.py are not considered as a part of a laboratory work dedicated to a practice pp_2. That are the test files, to ensure that the git works flaw.
