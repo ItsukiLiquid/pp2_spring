@@ -1,1 +1,0 @@
-print("Furina and Neuvilette")
