@@ -1,11 +1,10 @@
 a = int(input())
-
-def isPrime(b):
-    if b == 1:
-        return "YES"
+b = a - 1
+isPrime = True
+while (b > 1):
+    if a % b == 0:
+        isPrime = False
+        break
     else:
-        if a % b == 0:
-            print("NO")
-        else:
-            isPrime(b - 1)
-isPrime(a) 
+        b -= 1
+print("YES" if isPrime else "NO")

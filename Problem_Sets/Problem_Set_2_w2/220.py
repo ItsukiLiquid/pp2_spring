@@ -1,7 +1,10 @@
 # unsolved
+import sys
+
+input = sys.stdin.readline
 
 a = int(input())
-b = []
+out = []
 d = dict()
 for i in range(a):
     temp_list = list(map(str, input().split()))
@@ -11,7 +14,8 @@ for i in range(a):
         d[key] = value
     elif temp_list[0] == "get":
         key = temp_list[1]
-        try:
-            print(d[key])
-        except KeyError:
-            print(f"KE: no key {key} found in the document")
+        if key in d:
+            out.append(d[key])
+        else:
+            out.append(f"KE: no key {key} found in the document")
+print("\n".join(out))
