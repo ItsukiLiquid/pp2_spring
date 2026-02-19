@@ -1,4 +1,4 @@
-def squares(a: int, b: int) -> int:
+def squares(a: int, b: int):
     init_val = a
     while init_val <= b:
         yield init_val ** 2

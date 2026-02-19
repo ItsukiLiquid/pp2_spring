@@ -1,4 +1,4 @@
-def countdown(number: int) -> int:
+def countdown(number: int):
     init_val = number
     while init_val >= 0:
         yield init_val

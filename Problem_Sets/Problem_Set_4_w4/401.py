@@ -9,3 +9,7 @@ lst = squares(n)
 
 for i in lst:
     print(i)
+
+# variant 2
+lst = (x**2 for x in range(1, n))
+print(*lst, sep = "\n")
