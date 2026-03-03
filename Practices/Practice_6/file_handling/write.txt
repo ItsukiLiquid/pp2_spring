@@ -1,2 +1,1 @@
-this is
-the second fileNow it has appended from the code
+Oops! Nothing is left except this expression
