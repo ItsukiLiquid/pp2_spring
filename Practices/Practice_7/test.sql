@@ -8,7 +8,7 @@ CREATE TABLE if not exists contacts (
     contact_id SERIAL PRIMARY KEY,
     contact_first_name varchar(255) not null,
     contact_last_name varchar(255),
-    contact_number varchar(15) not null unique,
+    contact_number varchar(15) not null,
     contact_email varchar(511),
     contact_extra_info varchar(255)
 )
