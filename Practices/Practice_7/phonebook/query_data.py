@@ -24,7 +24,7 @@ def get_info(filter, sort_key, sort_type, sort_aggregate_value):
             select * from contacts where {filter}='{sort_aggregate_value}'
         """
     else:
-        print("Error: The filter isn't correct. You can choose: '*' (diplaying all data), 'key_name' and needed key value")
+        print("[Error]: The filter isn't correct. You can choose: '*' (diplaying all data), 'key_name' and needed key value")
     try:
         with psycopg2.connect(**config) as conn:
             with conn.cursor() as cursor:
@@ -36,4 +36,6 @@ def get_info(filter, sort_key, sort_type, sort_aggregate_value):
                     row = cursor.fetchone()
             conn.commit()
     except (Exception, psycopg2.DatabaseError) as error:
+        if conn:
+            conn.rollback()
         print(error)

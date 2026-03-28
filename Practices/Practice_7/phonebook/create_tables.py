@@ -22,8 +22,11 @@ def create_tables():
                 # execute the CREATE TABLE statement
                 for command in commands:
                     cur.execute(command)
+            conn.commit()
         print("The table is created.")
     except (psycopg2.DatabaseError, Exception) as error:
+        if conn:
+            conn.rollback() # transaction kickback
         print(error)
 
 if __name__ == '__main__':

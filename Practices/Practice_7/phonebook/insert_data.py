@@ -36,8 +36,11 @@ def insert_contact(contact: dict):
                     contact.get('additional_info', None)
                 ))
                 new_id = cursor.fetchone()[0]
-                print(f"Successfully inserted a contact with id: {new_id}")
+                print(f"[Success] Successfully inserted a contact with id: {new_id}")
+            conn.commit()
     except Exception as error:
+        if conn:
+            conn.rollback()
         print(error)
     finally:
         # Fetch the generated contact_id (Postgres serial primary key)
@@ -66,15 +69,17 @@ def import_contacts_from_csv(csv_file_path):
                         # Insert each contact into DB
                         new_id = insert_contact(row)
                         inserted_count += 1
-                        print(f"Inserted contact {row['first_name']} with ID {new_id}")
+                        print(f"[I] Inserted contact {row['first_name']} with ID {new_id}")
                 
                 # Commit all changes to the database
                 conn.commit()
                 
-        print(f"✅ Successfully inserted {inserted_count} contacts from CSV.")
+        print(f"[Success] ✅ Successfully inserted {inserted_count} contacts from CSV.")
         
     except (Exception, psycopg2.DatabaseError) as error:
-        print("Error:", error)
+        if conn:
+            conn.rollback()
+        print("[Error]:", error)
 
 
 # contact = {
