@@ -2,6 +2,7 @@
 import pygame, sys
 from pygame.locals import *
 import random, time
+import math
 
 #Initialzing 
 pygame.init()
@@ -24,6 +25,7 @@ SPEED = 5
 SCORE = 0
 COIN_SCORE = 0
 COIN_SPEED = 5
+SUFFICIENT_COIN_INCREASE = 5
 
 #Setting up Fonts
 font = pygame.font.SysFont("Verdana", 60)
@@ -86,7 +88,8 @@ class Coin(pygame.sprite.Sprite):
     def earn_point(self):
         if (self.rect.bottom <= 600):
             global COIN_SCORE
-            COIN_SCORE += 1
+            RANDOM_SCORE = random.randint(1, 3)
+            COIN_SCORE += RANDOM_SCORE
             self.rect.top = 0
             self.rect.center = (random.randint(40, SCREEN_WIDTH - 40), 0)
 
@@ -119,7 +122,10 @@ while True:
     #Cycles through all events occuring  
     for event in pygame.event.get():
         if event.type == INC_SPEED:
-              SPEED += 0.5      
+              SPEED += 0.5
+              if COIN_SCORE >= SUFFICIENT_COIN_INCREASE: # every time as COIN is a multiple of 5 (N = 5), the speed increases
+                  SPEED += 1
+                  SUFFICIENT_COIN_INCREASE = (SUFFICIENT_COIN_INCREASE // 5 + 1) * 5
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
@@ -139,10 +145,14 @@ while True:
     score_text = font_small.render("Scores", True, BLACK)
     coin_scores = font_small.render(str(COIN_SCORE), True, BLACK)
     coin_text = font_small.render("Coins", True, BLACK)
+    speed_info = font_small.render(f"Speed: {SPEED}", True, BLACK)
+    # coin_to_inc_speed = font_small.render(f"Coins to increase the speed: {SUFFICIENT_COIN_INCREASE}", True, BLACK)
+    # DISPLAYSURF.blit(coin_to_inc_speed, (5, 65))
     DISPLAYSURF.blit(scores, (10,25))
     DISPLAYSURF.blit(score_text, (5, 0))
     DISPLAYSURF.blit(coin_scores, (360, 25))
     DISPLAYSURF.blit(coin_text, (345, 0))
+    DISPLAYSURF.blit(speed_info, (5, 45))
     #Moves and Re-draws all Sprites
     for entity in all_sprites:
         entity.move()
