@@ -668,7 +668,6 @@ class Player(pygame.sprite.Sprite):
             self.nitro_timer -= 1
             if self.nitro_timer <= 0:
                 self.nitro_active = False
-        
         # Handle other powerups
         if self.power and self.power != "nitro":
             self.power_timer -= 1
