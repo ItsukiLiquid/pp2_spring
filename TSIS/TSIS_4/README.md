@@ -5,3 +5,4 @@ Quick guide for direction:
 4. db.py - python file to execute queries to PostgreSQL
 5. database.ini - database configuration
 6. db_connection.log - logging connections and executions to sql server (need to be ignored)
+7. config.py - use configurations to connect with DB
