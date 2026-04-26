@@ -107,6 +107,15 @@ CAR_COLORS = {
     "purple": (128, 0, 128)
 }
 
+# Car colors with their appropriate images
+CAR_IMAGES = {
+    "red": "player_red.png",
+    "blue": "player_blue.png",
+    "green": "player_green.png",
+    "yellow": "player_yellow.png",
+    "purple": "player_purple.png"
+}
+
 # ==================== SCREEN FUNCTIONS ====================
 
 def draw_button(surface, text, x, y, w, h, color, hover_color, is_hovered):
@@ -624,7 +633,10 @@ class Enemy(pygame.sprite.Sprite):
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__() 
-        self.image = pygame.image.load("assets/Player.png")
+        self.image_color = game_settings["car_color"]
+        self.image = pygame.image.load(f"assets/player_{self.image_color}.png")
+        if self.image_color != "blue":
+            self.image = pygame.transform.scale(self.image, (50, 100))
         self.rect = self.image.get_rect()
         self.rect.center = (160, 520)
 
@@ -1069,8 +1081,7 @@ while True:
                         obstacles.empty()
                         events.empty()
                         powerups.empty()
-                        all_sprites.empty()
-                        
+                        all_sprites.empty()            
                         P1 = Player()
                         E1 = Enemy(P1, enemies)
                         COIN = Coin(P1, coins)
