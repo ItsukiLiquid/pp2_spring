@@ -2996,3 +2996,187 @@ Query executed successfully.
     
 Parameters: ('itsukiliquid', 5, 2)
 Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:21:20
+    
+CREATE TABLE if not exists players (
+    id       SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE if not exists game_sessions (
+    id            SERIAL PRIMARY KEY,
+    player_id     INTEGER REFERENCES players(id),
+    score         INTEGER   NOT NULL,
+    level_reached INTEGER   NOT NULL,
+    played_at     TIMESTAMP DEFAULT NOW()
+);
+
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:21:28
+    
+    SELECT p.username, gs.score, gs.level_reached, gs.played_at
+    FROM game_sessions gs
+    JOIN players p ON gs.player_id = p.id
+    ORDER BY gs.score DESC
+    LIMIT 10
+    
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:21:35
+    
+    SELECT MAX(gs.score)
+    FROM game_sessions gs
+    JOIN players p ON gs.player_id = p.id
+    WHERE p.username = %s
+    
+Parameters: ('general_test',)
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:22:32
+    
+CREATE TABLE if not exists players (
+    id       SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE if not exists game_sessions (
+    id            SERIAL PRIMARY KEY,
+    player_id     INTEGER REFERENCES players(id),
+    score         INTEGER   NOT NULL,
+    level_reached INTEGER   NOT NULL,
+    played_at     TIMESTAMP DEFAULT NOW()
+);
+
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:22:37
+    
+    SELECT p.username, gs.score, gs.level_reached, gs.played_at
+    FROM game_sessions gs
+    JOIN players p ON gs.player_id = p.id
+    ORDER BY gs.score DESC
+    LIMIT 10
+    
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:23:00
+    
+    SELECT MAX(gs.score)
+    FROM game_sessions gs
+    JOIN players p ON gs.player_id = p.id
+    WHERE p.username = %s
+    
+Parameters: ('general_test',)
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:23:45
+    
+CREATE TABLE if not exists players (
+    id       SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE if not exists game_sessions (
+    id            SERIAL PRIMARY KEY,
+    player_id     INTEGER REFERENCES players(id),
+    score         INTEGER   NOT NULL,
+    level_reached INTEGER   NOT NULL,
+    played_at     TIMESTAMP DEFAULT NOW()
+);
+
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:23:50
+    
+    SELECT MAX(gs.score)
+    FROM game_sessions gs
+    JOIN players p ON gs.player_id = p.id
+    WHERE p.username = %s
+    
+Parameters: ('general_Test',)
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:25:53
+    
+CREATE TABLE if not exists players (
+    id       SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE if not exists game_sessions (
+    id            SERIAL PRIMARY KEY,
+    player_id     INTEGER REFERENCES players(id),
+    score         INTEGER   NOT NULL,
+    level_reached INTEGER   NOT NULL,
+    played_at     TIMESTAMP DEFAULT NOW()
+);
+
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:26:02
+    
+    SELECT MAX(gs.score)
+    FROM game_sessions gs
+    JOIN players p ON gs.player_id = p.id
+    WHERE p.username = %s
+    
+Parameters: ('rungame_test',)
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:26:07
+    
+    SELECT p.username, gs.score, gs.level_reached, gs.played_at
+    FROM game_sessions gs
+    JOIN players p ON gs.player_id = p.id
+    ORDER BY gs.score DESC
+    LIMIT 10
+    
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:26:07
+    
+    INSERT INTO players (username)
+    VALUES (%s)
+    ON CONFLICT (username) DO NOTHING
+    
+Parameters: ('rungame_test',)
+Query executed successfully.
+
+
+    ----------------------
+    2026-04-26 20:26:08
+    
+    INSERT INTO game_sessions (player_id, score, level_reached, played_at)
+    VALUES (
+        (SELECT id FROM players WHERE username = %s),
+        %s, %s, NOW() AT TIME ZONE 'Asia/Almaty'
+    )
+    
+Parameters: ('rungame_test', 1, 1)
+Query executed successfully.

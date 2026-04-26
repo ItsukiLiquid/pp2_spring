@@ -5,13 +5,10 @@ from db import execute_query
 import json
 import os
 import datetime
-
-# Initialize pygame
 pygame.init()
 
 # Create window
 WIDTH, HEIGHT = 600, 400
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Mini Snake")
 sound_eat = pygame.mixer.Sound("assets/snake_eat.mp3")
 
@@ -255,7 +252,7 @@ def save_game_result(username, score, level_reached):
     """
     execute_query(sql_insert, (username, score, level_reached))
 
-def get_username():
+def get_username(screen: pygame.Surface):
     """Display username entry screen"""
     input_text = ""
     entering = True
@@ -314,7 +311,7 @@ def is_over_button(mouse_pos, x, y, w, h):
     mx, my = mouse_pos
     return x <= mx <= x + w and y <= my <= y + h
 
-def show_main_menu():
+def show_main_menu(screen: pygame.Surface):
     """Display main menu screen with Play, Leaderboard, Settings, Quit buttons"""
     menu_running = True
     
@@ -374,7 +371,7 @@ def show_main_menu():
     
     return "quit"
 
-def show_settings_screen():
+def show_settings_screen(screen: pygame.Surface):
     """Display settings screen with sound toggle, snake color, grid overlay"""
     settings_running = True
     
@@ -475,7 +472,7 @@ def show_settings_screen():
     
     return "menu"
 
-def show_game_over_screen(final_score, final_level, personal_best=0):
+def show_game_over_screen(screen, final_score, final_level, personal_best=0):
     """Display game over screen with score, level, personal best, and buttons: Retry, Main Menu"""
     # check whether the music of background still playing, if yes, untoggle
     if game_settings.get("sound_enabled", True) and pygame.mixer.get_busy():
@@ -536,7 +533,7 @@ def show_game_over_screen(final_score, final_level, personal_best=0):
     
     return "menu"
 
-def show_standalone_leaderboard():
+def show_standalone_leaderboard(screen: pygame.Surface):
     """Display leaderboard screen with back button (called from menu)"""
     leaderboard = load_leaderboard()
     
@@ -612,7 +609,7 @@ def show_standalone_leaderboard():
     
     return "menu"
 
-def show_leaderboard(final_score):
+def show_leaderboard(screen: pygame.Surface, final_score, player_name, LEVEL):
     """Display leaderboard screen with top 10 scores (after game over)"""
     leaderboard = load_leaderboard()
     
@@ -780,234 +777,7 @@ game_over_text = font_big.render("Game Over!", True, (255, 255, 255))
 
 prev_level = LEVEL
 
-# =========================
-# SCENES
-# =========================
-# def running_scene():
-#     # ---------------------
-#     # Game logic
-#     # ---------------------
-#     # global variables
-#     global food_pos, food_spawn_time, poison_pos, poison_spawn_time, powerup_pos, powerup_type, powerup_spawn_time, active_power, power_start_time, shield_active, respawn_freeze, respawn_start_time, obstacles_disabled, obstacles_disabled_start, obstacles, LEVEL, prev_level, SCORE, game_over, WIDTH, HEIGHT, screen, snake
-#     if not game_over:
-#         current_time = pygame.time.get_ticks()
-#         if not respawn_freeze:
-#             snake.move()
-
-#         head = snake.body[0]
-#         head_x, head_y = head
-
-#         # Wall collision
-#         collision = (
-#             head_x < 0 or head_x >= WIDTH or
-#             head_y < 0 or head_y >= HEIGHT or
-#             head in snake.body[1:] or
-#             head in obstacles
-#         )
-
-#         if collision:
-#             if shield_active:
-#                 shield_active = False
-
-#                 reset_snake_safe(snake)
-
-#                 respawn_freeze = True
-#                 respawn_start_time = pygame.time.get_ticks()
-
-#                 powerup_type = None
-#                 active_power = None
-
-#                 # disable obstacles AFTER recovery
-#                 obstacles_disabled = True
-#                 obstacles_disabled_start = pygame.time.get_ticks()
-
-#             else:
-#                 game_over = True
-
-#         if respawn_freeze:
-#             if current_time - respawn_start_time < RESPAWN_DURATION:
-#                 # Skip movement
-#                 pass
-#             else:
-#                 respawn_freeze = False
-
-#         if obstacles_disabled:
-#             if current_time - obstacles_disabled_start > (RESPAWN_DURATION + OBSTACLE_DISABLE_DURATION):
-#                 obstacles_disabled = False
-
-#                 if LEVEL >= 3:
-#                     obstacles = generate_obstacles(
-#                         snake,
-#                         LEVEL - 2,
-#                         [food_pos, poison_pos]
-#                     )
-#                     obstacles_disabled = False
-
-#         # Food eaten
-#         if head == food_pos:
-
-#             snake.grow = True
-#             food_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [poison_pos])
-#             food_spawn_time = pygame.time.get_ticks()
-
-#             SCORE += random.randint(1, 3)
-#             sound_eat.play()  # Play eat sound
-#         # Poison eaten
-#         if head == poison_pos:
-#             sound_eat.play()
-#             # shrink snake by 2
-#             for _ in range(2):
-#                 if len(snake.body) > 1:
-#                     snake.body.pop()
-
-#             # Check death condition
-#             if len(snake.body) <= 1:
-#                 game_over = True
-
-#             # Respawn poison
-#             poison_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos])
-#             poison_spawn_time = pygame.time.get_ticks()
-
-#         # Food expiration
-#         current_time = pygame.time.get_ticks()
-#         if current_time - food_spawn_time > FOOD_LIFETIME:
-#             food_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [poison_pos])
-#             food_spawn_time = current_time
-#         if current_time - poison_spawn_time > POISON_LIFETIME:
-#             poison_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos])
-#             poison_spawn_time = current_time
-
-#           # Spawn power-up (only if none exists)
-#         if powerup_pos is None:
-#             if random.random() < POWERUP_CHANCE:
-#                 powerup_type = random.choice([
-#                     POWER_SPEED_UP,
-#                     POWER_SLOW,
-#                     POWER_SHIELD
-#                 ])
-
-#                 powerup_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos, poison_pos])
-#                 powerup_spawn_time = pygame.time.get_ticks()
-
-#         if powerup_pos and head == powerup_pos:
-#             active_power = powerup_type
-#             power_start_time = pygame.time.get_ticks()
-
-#             if powerup_type == POWER_SHIELD:
-#                 shield_active = True
-
-#             powerup_pos = None
-#             powerup_type = None  
-        
-#         if powerup_pos:
-#             if current_time - powerup_spawn_time > POWERUP_LIFETIME:
-#                 powerup_pos = None
-#                 powerup_type = None
-#         # Level update
-#         LEVEL = SCORE // 5 + 1
-
-#         if LEVEL != prev_level:
-#             prev_level = LEVEL
-
-#             if LEVEL >= 3:
-#                 obstacle_count = LEVEL - 2
-
-#                 obstacles = generate_obstacles(
-#                     snake,
-#                     obstacle_count,
-#                     [food_pos, poison_pos]
-#                 )
-
-#     # ---------------------
-#     # Rendering
-#     # ---------------------
-#     if not game_over:
-#         screen.fill(LEVEL_COLORS.get(LEVEL, (0, 183, 235)))  # default to light blue if level exceeds defined colors
-
-#         snake.draw(screen)
-#         draw_grid(screen, WIDTH, HEIGHT, snake.size) # if SETTINGS_FILE.get("grid_overlay_status", True) else None
-#         # Food color warning (last 1 sec)
-#         current_time = pygame.time.get_ticks()
-#         time_left = FOOD_LIFETIME - (current_time - food_spawn_time)
-
-#         if time_left < 1000:
-#             food_color = (255, 100, 100)
-#         else:
-#             food_color = (200, 0, 0)
-
-#         pygame.draw.rect(
-#             screen,
-#             food_color,
-#             (food_pos[0], food_pos[1], snake.size, snake.size)
-#         )
-#         pygame.draw.rect(
-#             screen,
-#             (120, 0, 0),  # dark red
-#             (poison_pos[0], poison_pos[1], snake.size, snake.size)
-#         )
-
-#         if powerup_pos:
-#             if powerup_type == POWER_SPEED_UP:
-#                 color = (0, 0, 255)  # blue
-#             elif powerup_type == POWER_SLOW:
-#                 color = (255, 165, 0)  # orange
-#             elif powerup_type == POWER_SHIELD:
-#                 color = (200, 200, 200)  # gray
-
-#             pygame.draw.rect(
-#                 screen,
-#                 color,
-#                 (powerup_pos[0], powerup_pos[1], snake.size, snake.size)
-#             )
-
-#         if not obstacles_disabled:
-#             for obs in obstacles:
-#                 pygame.draw.rect(
-#                     screen,
-#                     (0, 0, 0),
-#                     (obs[0], obs[1], snake.size, snake.size)
-#                 )
-
-#         # UI
-#         score_text = font_small.render(f"Score: {SCORE}", True, (0, 0, 0))
-#         level_text = font_small.render(f"Level: {LEVEL}", True, (0, 0, 0))
-#         size_info = font_small.render(f"Snake size: {len(snake.body)}", True, (0, 0, 0))
-#         if active_power:
-#             if active_power != POWER_SHIELD:
-#                 powerup_info = font_small.render(f"Power-up: {active_power} ({(5000 - (current_time - power_start_time)) // 1000}s)", True, (0, 0, 0))
-#             else:
-#                 powerup_info = font_small.render(f"Power-up: {active_power} (shield active)", True, (0, 0, 0))
-#             screen.blit(powerup_info, (5, 65))
-
-#         if respawn_freeze:
-#             freeze_text = font_small.render(f"RECOVERING... ({(RESPAWN_DURATION - (current_time - respawn_start_time)) // 1000}s)", True, (0, 0, 0))
-#             screen.blit(freeze_text, (5, 85))
-
-#         screen.blit(score_text, (5, 5))
-#         screen.blit(level_text, (5, 25))
-#         screen.blit(size_info, (5, 45))
-#     else:
-#         game_over_scene()
-#     # ---------------------
-#     # Update
-#     # ---------------------
-#     pygame.display.flip()
-#     base_speed = LEVEL_FPS.get(LEVEL, 20)
-#     if active_power == POWER_SPEED_UP:
-#         if current_time - power_start_time < 5000:
-#             base_speed += 10
-#         else:
-#             active_power = None
-
-#     elif active_power == POWER_SLOW:
-#         if current_time - power_start_time < 5000:
-#             base_speed -= 10
-#         else:
-#             active_power = None
-
-#     clock.tick(max(5, base_speed))  # avoid freezing
-
-def game_over_scene():
+def game_over_scene(screen: pygame.Surface):
     screen.fill((200, 0, 0))
     screen.blit(game_over_text, (WIDTH//2 - 120, HEIGHT//2 - 50))
     score_display = font_big.render(f"Score: {SCORE}", True, (255, 255, 255))
@@ -1016,315 +786,277 @@ def game_over_scene():
     screen.blit(level_display, (180, 250))
 
 
-
-# =========================
-# Game loop
-# =========================
-running = True
-game_over = False
-
-# while running:
-#     # ---------------------
-#     # Events
-#     # ---------------------
-#     for event in pygame.event.get():
-#         if event.type == pygame.QUIT:
-#             pygame.quit()
-#             sys.exit()
-
-#         if event.type == pygame.KEYDOWN:
-#             if event.key == pygame.K_UP:
-#                 snake.change_direction(0, -snake.size)
-#             elif event.key == pygame.K_DOWN:
-#                 snake.change_direction(0, snake.size)
-#             elif event.key == pygame.K_LEFT:
-#                 snake.change_direction(-snake.size, 0)
-#             elif event.key == pygame.K_RIGHT:
-#                 snake.change_direction(snake.size, 0)
-#         # if event.type == print_userevent:
-#         #     print("Obstacles:", obstacles)
-        
-
-while True:
-    # Show main menu and get choice
-    choice = show_main_menu()
+def run_game(screen: pygame.Surface):
+    # globalize every variable
+    global SCORE, LEVEL, snake, food_pos, poison_pos, powerup_pos, powerup_type, active_power, shield_active, respawn_freeze, respawn_start_time, obstacles, obstacles_disabled, obstacles_disabled_start, prev_level
+    # Get username before playing
+    player_name = get_username(screen)
     
-    if choice == "play":
-        # Get username before playing
-        player_name = get_username()
-        
-        # Get personal best
-        personal_best = get_personal_best(player_name)
-        
-        # Reapply difficulty settings
-        apply_settings()
-        
-        # Reset game state
-        snake = Snake()
-        SCORE = 0
-        LEVEL = 1
-        game_over = False
-        obstacles = []
-        food_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [])
-        food_spawn_time = pygame.time.get_ticks()
-        poison_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos])
-        poison_spawn_time = pygame.time.get_ticks()
-        powerup_pos = None
-        powerup_type = None
-        active_power = None
-        shield_active = False
-        
-        # Game loop
-        while not game_over:
-            # ---------------------
-            # Events
-            # ---------------------
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    sys.exit()
+    # Get personal best
+    personal_best = get_personal_best(player_name)
+    
+    # Reapply difficulty settings
+    apply_settings()
+    
+    # Reset game state
+    snake = Snake()
+    SCORE = 0
+    LEVEL = 1
+    game_over = False
+    obstacles = []
+    food_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [])
+    food_spawn_time = pygame.time.get_ticks()
+    poison_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos])
+    poison_spawn_time = pygame.time.get_ticks()
+    powerup_pos = None
+    powerup_type = None
+    active_power = None
+    shield_active = False
+    
+    # Game loop
+    while not game_over:
+        # ---------------------
+        # Events
+        # ---------------------
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        snake.change_direction(0, -snake.size)
-                    elif event.key == pygame.K_DOWN:
-                        snake.change_direction(0, snake.size)
-                    elif event.key == pygame.K_LEFT:
-                        snake.change_direction(-snake.size, 0)
-                    elif event.key == pygame.K_RIGHT:
-                        snake.change_direction(snake.size, 0)
-            if not game_over:
-                current_time = pygame.time.get_ticks()
-                if not respawn_freeze:
-                    snake.move()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    snake.change_direction(0, -snake.size)
+                elif event.key == pygame.K_DOWN:
+                    snake.change_direction(0, snake.size)
+                elif event.key == pygame.K_LEFT:
+                    snake.change_direction(-snake.size, 0)
+                elif event.key == pygame.K_RIGHT:
+                    snake.change_direction(snake.size, 0)
+        if not game_over:
+            current_time = pygame.time.get_ticks()
+            if not respawn_freeze:
+                snake.move()
 
-                head = snake.body[0]
-                head_x, head_y = head
+            head = snake.body[0]
+            head_x, head_y = head
 
-                # Wall collision
-                collision = (
-                    head_x < 0 or head_x >= WIDTH or
-                    head_y < 0 or head_y >= HEIGHT or
-                    head in snake.body[1:] or
-                    head in obstacles
-                )
-                if collision:
-                    if shield_active:
-                        shield_active = False
+            # Wall collision
+            collision = (
+                head_x < 0 or head_x >= WIDTH or
+                head_y < 0 or head_y >= HEIGHT or
+                head in snake.body[1:] or
+                head in obstacles
+            )
+            if collision:
+                if shield_active:
+                    shield_active = False
 
-                        reset_snake_safe(snake)
+                    reset_snake_safe(snake)
 
-                        respawn_freeze = True
-                        respawn_start_time = pygame.time.get_ticks()
+                    respawn_freeze = True
+                    respawn_start_time = pygame.time.get_ticks()
 
-                        powerup_type = None
-                        active_power = None
+                    powerup_type = None
+                    active_power = None
 
-                        # disable obstacles AFTER recovery
-                        obstacles_disabled = True
-                        obstacles_disabled_start = pygame.time.get_ticks()
+                    # disable obstacles AFTER recovery
+                    obstacles_disabled = True
+                    obstacles_disabled_start = pygame.time.get_ticks()
 
-                    else:
-                        game_over = True
+                else:
+                    game_over = True
 
-                if respawn_freeze:
-                    if current_time - respawn_start_time < RESPAWN_DURATION:
-                        # Skip movement
-                        pass
-                    else:
-                        respawn_freeze = False
+            if respawn_freeze:
+                if current_time - respawn_start_time < RESPAWN_DURATION:
+                    # Skip movement
+                    pass
+                else:
+                    respawn_freeze = False
 
-                if obstacles_disabled:
-                    if current_time - obstacles_disabled_start > (RESPAWN_DURATION + OBSTACLE_DISABLE_DURATION):
-                        obstacles_disabled = False
-
-                        if LEVEL >= 3:
-                            obstacles = generate_obstacles(
-                                snake,
-                                LEVEL - 2,
-                                [food_pos, poison_pos]
-                            )
-                            obstacles_disabled = False
-
-                # Food eaten
-                if head == food_pos:
-                    if game_settings["sound_enabled"] == True:
-                        sound_eat.play()
-                    snake.grow = True
-                    food_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [poison_pos])
-                    food_spawn_time = pygame.time.get_ticks()
-
-                    SCORE += random.randint(1, 3)
-                    if game_settings.get("sound_enabled", True):
-                        sound_eat.play()  # Play eat sound
-                # Poison eaten
-                if head == poison_pos:
-                    if game_settings.get("sound_enabled", True):
-                        sound_eat.play()
-                    # shrink snake by 2
-                    for _ in range(2):
-                        if len(snake.body) > 1:
-                            snake.body.pop()
-
-                    # Check death condition
-                    if len(snake.body) <= 1:
-                        game_over = True
-
-                    # Respawn poison
-                    poison_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos])
-                    poison_spawn_time = pygame.time.get_ticks()
-
-                # Food expiration
-                current_time = pygame.time.get_ticks()
-                if current_time - food_spawn_time > FOOD_LIFETIME:
-                    food_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [poison_pos])
-                    food_spawn_time = current_time
-                if current_time - poison_spawn_time > POISON_LIFETIME:
-                    poison_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos])
-                    poison_spawn_time = current_time
-
-                # Spawn power-up (only if none exists)
-                if powerup_pos is None:
-                    if random.random() < POWERUP_CHANCE:
-                        powerup_type = random.choice([
-                            POWER_SPEED_UP,
-                            POWER_SLOW,
-                            POWER_SHIELD
-                        ])
-
-                        powerup_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos, poison_pos])
-                        powerup_spawn_time = pygame.time.get_ticks()
-
-                if powerup_pos and head == powerup_pos:
-                    active_power = powerup_type
-                    power_start_time = pygame.time.get_ticks()
-
-                    if powerup_type == POWER_SHIELD:
-                        shield_active = True
-
-                    powerup_pos = None
-                    powerup_type = None  
-                
-                if powerup_pos:
-                    if current_time - powerup_spawn_time > POWERUP_LIFETIME:
-                        powerup_pos = None
-                        powerup_type = None
-                # Level update
-                LEVEL = SCORE // 5 + 1
-
-                if LEVEL != prev_level:
-                    prev_level = LEVEL
+            if obstacles_disabled:
+                if current_time - obstacles_disabled_start > (RESPAWN_DURATION + OBSTACLE_DISABLE_DURATION):
+                    obstacles_disabled = False
 
                     if LEVEL >= 3:
-                        obstacle_count = LEVEL - 2
-
                         obstacles = generate_obstacles(
                             snake,
-                            obstacle_count,
+                            LEVEL - 2,
                             [food_pos, poison_pos]
                         )
+                        obstacles_disabled = False
 
-            # ---------------------
-            # Rendering
-            # ---------------------
-            if not game_over:
-                screen.fill(LEVEL_COLORS.get(LEVEL, (0, 183, 235)))  # default to light blue if level exceeds defined colors
+            # Food eaten
+            if head == food_pos:
+                if game_settings["sound_enabled"] == True:
+                    sound_eat.play()
+                snake.grow = True
+                food_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [poison_pos])
+                food_spawn_time = pygame.time.get_ticks()
 
-                snake.draw(screen)
-                
-                # Grid overlay - respect settings
-                if game_settings.get("grid_overlay_status", True):
-                    draw_grid(screen, WIDTH, HEIGHT, snake.size)
-                # Food color warning (last 1 sec)
-                current_time = pygame.time.get_ticks()
-                time_left = FOOD_LIFETIME - (current_time - food_spawn_time)
+                SCORE += random.randint(1, 3)
+                if game_settings.get("sound_enabled", True):
+                    sound_eat.play()  # Play eat sound
+            # Poison eaten
+            if head == poison_pos:
+                if game_settings.get("sound_enabled", True):
+                    sound_eat.play()
+                # shrink snake by 2
+                for _ in range(2):
+                    if len(snake.body) > 1:
+                        snake.body.pop()
 
-                if time_left < 1000:
-                    food_color = (255, 100, 100)
-                else:
-                    food_color = (200, 0, 0)
+                # Check death condition
+                if len(snake.body) <= 1:
+                    game_over = True
 
-                pygame.draw.rect(
-                    screen,
-                    food_color,
-                    (food_pos[0], food_pos[1], snake.size, snake.size)
-                )
-                pygame.draw.rect(
-                    screen,
-                    (120, 0, 0),  # dark red
-                    (poison_pos[0], poison_pos[1], snake.size, snake.size)
-                )
+                # Respawn poison
+                poison_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos])
+                poison_spawn_time = pygame.time.get_ticks()
 
-                if powerup_pos:
-                    if powerup_type == POWER_SPEED_UP:
-                        color = (0, 0, 255)  # blue
-                    elif powerup_type == POWER_SLOW:
-                        color = (255, 165, 0)  # orange
-                    elif powerup_type == POWER_SHIELD:
-                        color = (200, 200, 200)  # gray
+            # Food expiration
+            current_time = pygame.time.get_ticks()
+            if current_time - food_spawn_time > FOOD_LIFETIME:
+                food_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [poison_pos])
+                food_spawn_time = current_time
+            if current_time - poison_spawn_time > POISON_LIFETIME:
+                poison_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos])
+                poison_spawn_time = current_time
 
-                    pygame.draw.rect(
-                        screen,
-                        color,
-                        (powerup_pos[0], powerup_pos[1], snake.size, snake.size)
+            # Spawn power-up (only if none exists)
+            if powerup_pos is None:
+                if random.random() < POWERUP_CHANCE:
+                    powerup_type = random.choice([
+                        POWER_SPEED_UP,
+                        POWER_SLOW,
+                        POWER_SHIELD
+                    ])
+
+                    powerup_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [food_pos, poison_pos])
+                    powerup_spawn_time = pygame.time.get_ticks()
+
+            if powerup_pos and head == powerup_pos:
+                active_power = powerup_type
+                power_start_time = pygame.time.get_ticks()
+
+                if powerup_type == POWER_SHIELD:
+                    shield_active = True
+
+                powerup_pos = None
+                powerup_type = None  
+            
+            if powerup_pos:
+                if current_time - powerup_spawn_time > POWERUP_LIFETIME:
+                    powerup_pos = None
+                    powerup_type = None
+            # Level update
+            LEVEL = SCORE // 5 + 1
+
+            if LEVEL != prev_level:
+                prev_level = LEVEL
+
+                if LEVEL >= 3:
+                    obstacle_count = LEVEL - 2
+
+                    obstacles = generate_obstacles(
+                        snake,
+                        obstacle_count,
+                        [food_pos, poison_pos]
                     )
 
-                if not obstacles_disabled:
-                    for obs in obstacles:
-                        pygame.draw.rect(
-                            screen,
-                            (0, 0, 0),
-                            (obs[0], obs[1], snake.size, snake.size)
-                        )
+        # ---------------------
+        # Rendering
+        # ---------------------
+        if not game_over:
+            screen.fill(LEVEL_COLORS.get(LEVEL, (0, 183, 235)))  # default to light blue if level exceeds defined colors
 
-                # UI
-                score_text = font_small.render(f"Score: {SCORE}", True, (0, 0, 0))
-                level_text = font_small.render(f"Level: {LEVEL}", True, (0, 0, 0))
-                size_info = font_small.render(f"Snake size: {len(snake.body)}", True, (0, 0, 0))
-                if active_power:
-                    if active_power != POWER_SHIELD:
-                        powerup_info = font_small.render(f"Power-up: {active_power} ({(5000 - (current_time - power_start_time)) // 1000}s)", True, (0, 0, 0))
-                    else:
-                        powerup_info = font_small.render(f"Power-up: {active_power} (shield active)", True, (0, 0, 0))
-                    screen.blit(powerup_info, (5, 65))
+            snake.draw(screen)
+            
+            # Grid overlay - respect settings
+            if game_settings.get("grid_overlay_status", True):
+                draw_grid(screen, WIDTH, HEIGHT, snake.size)
+            # Food color warning (last 1 sec)
+            current_time = pygame.time.get_ticks()
+            time_left = FOOD_LIFETIME - (current_time - food_spawn_time)
 
-                if respawn_freeze:
-                    freeze_text = font_small.render(f"RECOVERING... ({(RESPAWN_DURATION - (current_time - respawn_start_time)) // 1000}s)", True, (0, 0, 0))
-                    screen.blit(freeze_text, (5, 85))
-
-                screen.blit(score_text, (5, 5))
-                screen.blit(level_text, (5, 25))
-                screen.blit(size_info, (5, 45))
+            if time_left < 1000:
+                food_color = (255, 100, 100)
             else:
-                # Game over - show screen and then leaderboard
-                result = show_game_over_screen(SCORE, LEVEL, personal_best)
-                if result == "retry":
-                    continue  # Restart the game loop
-                elif result == "menu":
-                    show_leaderboard(SCORE)
-                    break  # Return to main menu
-            # ---------------------
-            # Update
-            # ---------------------
-            pygame.display.flip()
-            base_speed = LEVEL_FPS.get(LEVEL, 20)
-            if active_power == POWER_SPEED_UP:
-                if current_time - power_start_time < 5000:
-                    base_speed += 10
-                else:
-                    active_power = None
+                food_color = (200, 0, 0)
 
-            elif active_power == POWER_SLOW:
-                if current_time - power_start_time < 5000:
-                    base_speed -= 10
-                else:
-                    active_power = None
+            pygame.draw.rect(
+                screen,
+                food_color,
+                (food_pos[0], food_pos[1], snake.size, snake.size)
+            )
+            pygame.draw.rect(
+                screen,
+                (120, 0, 0),  # dark red
+                (poison_pos[0], poison_pos[1], snake.size, snake.size)
+            )
 
-            clock.tick(max(5, base_speed))  # avoid freezing
-    elif choice == "leaderboard":
-        show_standalone_leaderboard()  # Pass dummy score since we're just viewing
-    elif choice == "settings":
-        show_settings_screen()
-    elif choice == "quit":
-        pygame.quit()
-        sys.exit()
+            if powerup_pos:
+                if powerup_type == POWER_SPEED_UP:
+                    color = (0, 0, 255)  # blue
+                elif powerup_type == POWER_SLOW:
+                    color = (255, 165, 0)  # orange
+                elif powerup_type == POWER_SHIELD:
+                    color = (200, 200, 200)  # gray
+
+                pygame.draw.rect(
+                    screen,
+                    color,
+                    (powerup_pos[0], powerup_pos[1], snake.size, snake.size)
+                )
+
+            if not obstacles_disabled:
+                for obs in obstacles:
+                    pygame.draw.rect(
+                        screen,
+                        (0, 0, 0),
+                        (obs[0], obs[1], snake.size, snake.size)
+                    )
+
+            # UI
+            score_text = font_small.render(f"Score: {SCORE}", True, (0, 0, 0))
+            level_text = font_small.render(f"Level: {LEVEL}", True, (0, 0, 0))
+            size_info = font_small.render(f"Snake size: {len(snake.body)}", True, (0, 0, 0))
+            if active_power:
+                if active_power != POWER_SHIELD:
+                    powerup_info = font_small.render(f"Power-up: {active_power} ({(5000 - (current_time - power_start_time)) // 1000}s)", True, (0, 0, 0))
+                else:
+                    powerup_info = font_small.render(f"Power-up: {active_power} (shield active)", True, (0, 0, 0))
+                screen.blit(powerup_info, (5, 65))
+
+            if respawn_freeze:
+                freeze_text = font_small.render(f"RECOVERING... ({(RESPAWN_DURATION - (current_time - respawn_start_time)) // 1000}s)", True, (0, 0, 0))
+                screen.blit(freeze_text, (5, 85))
+
+            screen.blit(score_text, (5, 5))
+            screen.blit(level_text, (5, 25))
+            screen.blit(size_info, (5, 45))
+        else:
+            # Game over - show screen and then leaderboard
+            result = show_game_over_screen(screen, SCORE, LEVEL, personal_best)
+            if result == "retry":
+                continue  # Restart the game loop
+            elif result == "menu":
+                show_leaderboard(screen, SCORE, player_name, LEVEL)
+                break  # Return to main menu
+        # ---------------------
+        # Update
+        # ---------------------
+        pygame.display.flip()
+        base_speed = LEVEL_FPS.get(LEVEL, 20)
+        if active_power == POWER_SPEED_UP:
+            if current_time - power_start_time < 5000:
+                base_speed += 10
+            else:
+                active_power = None
+
+        elif active_power == POWER_SLOW:
+            if current_time - power_start_time < 5000:
+                base_speed -= 10
+            else:
+                active_power = None
+
+        pygame.time.Clock().tick(max(5, base_speed))  # avoid freezing

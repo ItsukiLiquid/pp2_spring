@@ -250,7 +250,7 @@ def save_game_result(username, score, level_reached):
     INSERT INTO game_sessions (player_id, score, level_reached, played_at)
     VALUES (
         (SELECT id FROM players WHERE username = %s),
-        %s, %s, NOW() AT TIME ZONE 'Asia/Almaty'
+        %s, %s, NOW()
     )
     """
     execute_query(sql_insert, (username, score, level_reached))
@@ -551,48 +551,37 @@ def show_standalone_leaderboard():
         
         # Title
         title = font_small.render("LEADERBOARD", True, WHITE)
-        title_rect = title.get_rect(center=(WIDTH//2, 20))
+        title_rect = title.get_rect(center=(WIDTH//2, 25))
         screen.blit(title, title_rect)
         
-        # Draw header - added Date column
-        headers = ["Rank", "Name", "Score", "Date"]
-        x_positions = [20, 70, 140, 210]
+        # Draw header
+        headers = ["Rank", "Name", "Score", "Level"]
+        x_positions = [30, 100, 210, 320]
         
         for i, header in enumerate(headers):
             header_surf = font_small.render(header, True, GREEN)
-            screen.blit(header_surf, (x_positions[i], 45))
+            screen.blit(header_surf, (x_positions[i], 55))
         
-        pygame.draw.line(screen, WHITE, (20, 60), (380, 60), 1)
+        pygame.draw.line(screen, WHITE, (20, 75), (380, 75), 1)
         
-        # Draw entries or empty message (limited to 7 to fit with date)
+        # Draw entries or empty message (limited to 8 entries to fit)
         if not leaderboard:
             empty_msg = font_small.render("No scores yet!", True, WHITE)
             empty_rect = empty_msg.get_rect(center=(WIDTH//2, 180))
             screen.blit(empty_msg, empty_rect)
         else:
-            for idx, entry in enumerate(leaderboard[:10]):
-                y_pos = 75 + idx * 25
-                
-                # Format date as %d.%m.%Y-%H:%M:%S
-                played_at = entry.get("played_at")
-                if played_at:
-                    try:
-                        date_obj = played_at if isinstance(played_at, datetime.datetime) else datetime.datetime.fromisoformat(str(played_at))
-                        date_str = date_obj.strftime("%d.%m.%y %H:%M")
-                    except:
-                        date_str = "-"
-                else:
-                    date_str = "-"
+            for idx, entry in enumerate(leaderboard[:8]):  # Limit to 8 entries
+                y_pos = 90 + idx * 30
                 
                 rank_surf = font_small.render(f"{idx + 1}.", True, WHITE)
-                name_surf = font_small.render(entry.get("username", "?")[:8], True, WHITE)
+                name_surf = font_small.render(entry.get("username", "?")[:10], True, WHITE)
                 score_surf = font_small.render(str(entry.get("score", 0)), True, WHITE)
-                date_surf = font_small.render(date_str, True, WHITE)
+                level_surf = font_small.render(str(entry.get("level_reached", 1)), True, WHITE)
                 
                 screen.blit(rank_surf, (x_positions[0], y_pos))
                 screen.blit(name_surf, (x_positions[1], y_pos))
                 screen.blit(score_surf, (x_positions[2], y_pos))
-                screen.blit(date_surf, (x_positions[3], y_pos))
+                screen.blit(level_surf, (x_positions[3], y_pos))
         
         # Back button
         mouse_pos = pygame.mouse.get_pos()
@@ -642,55 +631,39 @@ def show_leaderboard(final_score):
     while showing:
         screen.fill(BLACK)
         
-        # Title
-        title = font_small.render("LEADERBOARD", True, WHITE)
+        title = font_small.render("TOP 10 LEADERBOARD", True, WHITE)
         title_rect = title.get_rect(center=(WIDTH//2, 20))
         screen.blit(title, title_rect)
         
-        # Draw header - added Date column
-        headers = ["Rank", "Name", "Score", "Date"]
-        x_positions = [20, 70, 140, 210]
+        # Draw header
+        headers = ["Rank", "Name", "Score", "Level"]
+        x_positions = [20, 100, 220, 320]
         
         for i, header in enumerate(headers):
             header_surf = font_small.render(header, True, GREEN)
             screen.blit(header_surf, (x_positions[i], 45))
         
-        pygame.draw.line(screen, WHITE, (20, 60), (380, 60), 1)
+        # Draw separator line
+        pygame.draw.line(screen, WHITE, (20, 65), (380, 65), 1)
         
-        # Draw entries or empty message (limited to 7 to fit with date)
-        if not leaderboard:
-            empty_msg = font_small.render("No scores yet!", True, WHITE)
-            empty_rect = empty_msg.get_rect(center=(WIDTH//2, 180))
-            screen.blit(empty_msg, empty_rect)
-        else:
-            for idx, entry in enumerate(leaderboard[:10]):
-                y_pos = 75 + idx * 25
-                
-                # Format date as %d.%m.%Y-%H:%M:%S
-                played_at = entry.get("played_at")
-                if played_at:
-                    try:
-                        date_obj = played_at if isinstance(played_at, datetime.datetime) else datetime.datetime.fromisoformat(str(played_at))
-                        date_str = date_obj.strftime("%d.%m.%y %H:%M")
-                    except:
-                        date_str = "-"
-                else:
-                    date_str = "-"
-                
-                rank_surf = font_small.render(f"{idx + 1}.", True, WHITE)
-                name_surf = font_small.render(entry.get("username", "?")[:8], True, WHITE)
-                score_surf = font_small.render(str(entry.get("score", 0)), True, WHITE)
-                date_surf = font_small.render(date_str, True, WHITE)
-                
-                screen.blit(rank_surf, (x_positions[0], y_pos))
-                screen.blit(name_surf, (x_positions[1], y_pos))
-                screen.blit(score_surf, (x_positions[2], y_pos))
-                screen.blit(date_surf, (x_positions[3], y_pos))
+        # Draw leaderboard entries (limited to 8 to fit)
+        for idx, entry in enumerate(leaderboard[:8]):
+            y_pos = 80 + idx * 30
+            
+            rank_surf = font_small.render(f"{idx + 1}.", True, WHITE)
+            name_surf = font_small.render(entry.get("username", "?")[:10], True, WHITE)
+            score_surf = font_small.render(str(entry.get("score", 0)), True, WHITE)
+            level_surf = font_small.render(str(entry.get("level_reached", 1)), True, WHITE)
+            
+            screen.blit(rank_surf, (x_positions[0], y_pos))
+            screen.blit(name_surf, (x_positions[1], y_pos))
+            screen.blit(score_surf, (x_positions[2], y_pos))
+            screen.blit(level_surf, (x_positions[3], y_pos))
         
-        # Back button
+        # Back button with mouse hover
         mouse_pos = pygame.mouse.get_pos()
         is_back_hover = is_over_button(mouse_pos, back_x, back_y, button_width, button_height)
-        draw_button(screen, "Back", back_x, back_y, button_width, button_height, BLUE, YELLOW, is_back_hover)
+        draw_button(screen, "Back to Menu", back_x, back_y, button_width, button_height, BLUE, YELLOW, is_back_hover)
         
         pygame.display.update()
         
@@ -701,7 +674,9 @@ def show_leaderboard(final_score):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mx, my = event.pos
                 if is_over_button((mx, my), back_x, back_y, button_width, button_height):
-                    return "menu"
+                    showing = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
                     showing = False
     
     return False
@@ -773,7 +748,7 @@ SCORE = 0
 LEVEL = 1
 
 # Fonts
-font_small = pygame.font.SysFont("Georgia", 16)
+font_small = pygame.font.SysFont("Georgia", 20)
 font_big = pygame.font.SysFont(None, 50)
 
 game_over_text = font_big.render("Game Over!", True, (255, 255, 255))
@@ -1108,6 +1083,7 @@ while True:
                     head in snake.body[1:] or
                     head in obstacles
                 )
+
                 if collision:
                     if shield_active:
                         shield_active = False
@@ -1148,19 +1124,16 @@ while True:
 
                 # Food eaten
                 if head == food_pos:
-                    if game_settings["sound_enabled"] == True:
-                        sound_eat.play()
+
                     snake.grow = True
                     food_pos = generate_food(snake, WIDTH, HEIGHT, snake.size, [poison_pos])
                     food_spawn_time = pygame.time.get_ticks()
 
                     SCORE += random.randint(1, 3)
-                    if game_settings.get("sound_enabled", True):
-                        sound_eat.play()  # Play eat sound
+                    sound_eat.play()  # Play eat sound
                 # Poison eaten
                 if head == poison_pos:
-                    if game_settings.get("sound_enabled", True):
-                        sound_eat.play()
+                    sound_eat.play()
                     # shrink snake by 2
                     for _ in range(2):
                         if len(snake.body) > 1:
@@ -1301,7 +1274,6 @@ while True:
                 if result == "retry":
                     continue  # Restart the game loop
                 elif result == "menu":
-                    show_leaderboard(SCORE)
                     break  # Return to main menu
             # ---------------------
             # Update
